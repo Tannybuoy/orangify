@@ -240,10 +240,10 @@ function RightPanel({
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
-        className="relative overflow-hidden rounded-2xl shadow-lg border border-border w-full max-w-lg select-none cursor-ew-resize"
+        className="relative overflow-hidden rounded-2xl shadow-lg border border-border select-none cursor-ew-resize"
         style={{
           aspectRatio: `${result.width} / ${result.height}`,
-          maxHeight: "55vh",
+          width: `min(100%, calc(55vh * ${result.width} / ${result.height}))`,
           backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20'%3E%3Crect width='10' height='10' fill='%23e5e7eb'/%3E%3Crect x='10' y='10' width='10' height='10' fill='%23e5e7eb'/%3E%3Crect x='10' width='10' height='10' fill='%23f9fafb'/%3E%3Crect y='10' width='10' height='10' fill='%23f9fafb'/%3E%3C/svg%3E")`,
         }}
       >
