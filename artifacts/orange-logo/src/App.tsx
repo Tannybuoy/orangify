@@ -85,9 +85,8 @@ function LeftPanel({
               {icon}
             </div>
             <div>
-              <span className="text-xs text-muted-foreground font-medium">Step {i + 1} — </span>
-              <span className="text-sm font-semibold text-foreground">{label}</span>
-              <span className="text-xs text-muted-foreground"> · {desc}</span>
+              <span className="text-sm font-semibold text-foreground">Step {i + 1}: {label}</span>
+              <span className="text-xs text-muted-foreground"> ({desc})</span>
             </div>
           </li>
         ))}
