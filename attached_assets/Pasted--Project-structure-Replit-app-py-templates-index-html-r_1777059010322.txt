@@ -1,0 +1,182 @@
+🧱 Project structure (Replit)
+/app.py
+/templates/
+    index.html
+    result.html
+/requirements.txt
+1. requirements.txt
+Flask
+Pillow
+2. app.py
+from flask import Flask, request, render_template
+from PIL import Image
+import io, base64
+
+app = Flask(__name__)
+
+ORANGE = (255, 106, 0)
+
+def to_base64(img):
+    buffer = io.BytesIO()
+    img.save(buffer, format="PNG")
+    return base64.b64encode(buffer.getvalue()).decode()
+
+@app.route("/")
+def home():
+    return render_template("index.html")
+
+
+@app.route("/upload", methods=["POST"])
+def upload():
+    file = request.files["image"]
+    img = Image.open(file).convert("RGBA")
+
+    original_b64 = to_base64(img)
+
+    pixels = img.getdata()
+    new_pixels = []
+
+    for r, g, b, a in pixels:
+        if a == 0:
+            new_pixels.append((255, 255, 255, 0))
+        else:
+            new_pixels.append((*ORANGE, a))
+
+    img.putdata(new_pixels)
+    orange_b64 = to_base64(img)
+
+    return render_template(
+        "result.html",
+        original=original_b64,
+        orange=orange_b64
+    )
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=3000)
+3. templates/index.html (upload page)
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Orange Logo Converter</title>
+    <style>
+        body {
+            font-family: Arial;
+            text-align: center;
+            padding-top: 80px;
+        }
+
+        .card {
+            display: inline-block;
+            padding: 30px;
+            border: 1px solid #eee;
+            border-radius: 12px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Turn any logo orange</h2>
+
+    <form action="/upload" method="post" enctype="multipart/form-data">
+        <input type="file" name="image" accept="image/*" required />
+        <br><br>
+        <button type="submit">Convert</button>
+    </form>
+</div>
+
+</body>
+</html>
+4. templates/result.html (slider UI)
+
+This is your “wow moment” page.
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>Preview</title>
+
+<style>
+body {
+    font-family: Arial;
+    text-align: center;
+    padding: 30px;
+}
+
+.container {
+    position: relative;
+    width: 420px;
+    margin: auto;
+}
+
+.container img {
+    width: 100%;
+    display: block;
+}
+
+.top {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 50%;
+    overflow: hidden;
+}
+
+.slider {
+    width: 420px;
+    margin-top: 20px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Before → After</h2>
+
+<div class="container">
+    <!-- Bottom (orange) -->
+    <img src="data:image/png;base64,{{ orange }}">
+
+    <!-- Top (original) -->
+    <div class="top" id="top">
+        <img src="data:image/png;base64,{{ original }}">
+    </div>
+</div>
+
+<input type="range" min="0" max="100" value="50" class="slider" id="slider">
+
+<script>
+const slider = document.getElementById("slider");
+const topImg = document.getElementById("top");
+
+slider.oninput = function () {
+    topImg.style.width = this.value + "%";
+};
+</script>
+
+</body>
+</html>
+🚀 How to deploy in Replit
+Go to Replit
+Click Create Repl
+Choose → Python (Flask)
+Replace files with above structure
+Click Run
+Click Deploy (top right → Deploy tab)
+
+Replit will auto-host it.
+
+💡 What you now have
+
+You’ve built:
+
+Upload system
+Image processing pipeline
+Interactive slider comparison UI
+Zero frontend frameworks needed
+
+This is already:
+👉 shareable on LinkedIn
+👉 demo-ready
+👉 MVP-grade SaaS seed

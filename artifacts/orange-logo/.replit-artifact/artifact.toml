@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Orange Logo Converter"
+version = "1.0.0"
+id = "artifacts/orange-logo"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 26153
+
+[services.development]
+run = "pnpm --filter @workspace/orange-logo run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/orange-logo", "run", "build" ]
+publicDir = "artifacts/orange-logo/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "26153"
+BASE_PATH = "/"
