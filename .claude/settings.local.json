@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm install:*)",
+      "Bash(pnpm --filter @workspace/orange-logo run dev)",
+      "Bash(PORT=5173 BASE_PATH=/ pnpm --filter @workspace/orange-logo run dev)",
+      "Bash(MSYS_NO_PATHCONV=1 PORT=5173 BASE_PATH=/ pnpm --filter @workspace/orange-logo run dev)",
+      "Bash(taskkill /F /IM node.exe /T)",
+      "Bash(cmd //c \"taskkill /F /IM node.exe /T\")"
+    ]
+  }
+}
