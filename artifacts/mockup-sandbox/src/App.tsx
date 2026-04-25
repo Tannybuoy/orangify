@@ -1,4 +1,5 @@
 import { useEffect, useState, type ComponentType } from "react";
+import { Analytics } from "@vercel/analytics/react";
 
 import { modules as discoveredModules } from "./.generated/mockup-components";
 
@@ -133,14 +134,22 @@ function App() {
 
   if (previewPath) {
     return (
-      <PreviewRenderer
-        componentPath={previewPath}
-        modules={discoveredModules}
-      />
+      <>
+        <PreviewRenderer
+          componentPath={previewPath}
+          modules={discoveredModules}
+        />
+        <Analytics />
+      </>
     );
   }
 
-  return <Gallery />;
+  return (
+    <>
+      <Gallery />
+      <Analytics />
+    </>
+  );
 }
 
 export default App;
