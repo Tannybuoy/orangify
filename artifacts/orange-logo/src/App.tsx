@@ -67,9 +67,7 @@ function LeftPanel({
   return (
     <div className="flex flex-col justify-center h-full px-8 py-10 gap-8 max-w-md mx-auto w-full">
       <div>
-        <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-primary/10 mb-4">
-          <Zap className="w-6 h-6 text-primary fill-primary/20" />
-        </div>
+        <img src="/orangify.png" alt="Orangify" className="h-12 mb-4" />
         <h1 className="text-3xl font-extrabold tracking-tight text-foreground mb-2">
           Orangify Your Logo
         </h1>
