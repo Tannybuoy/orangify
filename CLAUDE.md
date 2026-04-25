@@ -14,8 +14,8 @@ pnpm run typecheck
 # Build everything (typecheck + build all packages)
 pnpm run build
 
-# Run the frontend app (orange-logo)
-pnpm --filter @workspace/orange-logo run dev
+# Run the frontend app (orange-logo) — PORT and BASE_PATH are optional (defaults: 5173, /)
+PORT=5173 BASE_PATH=/ pnpm --filter @workspace/orange-logo run dev
 
 # Run the API server
 pnpm --filter @workspace/api-server run dev
@@ -62,10 +62,24 @@ scripts/         # Utility scripts
 A purely client-side React app. The core logic lives in `src/lib/orangify.ts`, which uses the Canvas API to:
 1. Load the uploaded image (with special handling for SVGs via DOMParser)
 2. Scale images down to a 2048px cap
-3. Replace all non-transparent, non-near-white pixels (luminance < 220) with `rgb(255, 106, 0)`
-4. Return both the original and orangified image as data URLs
+3. Analyse the image to build a `FeatureProfile` (photographic, multiColor, textDominance, warmBias, flatness, gradientLikely, coloredRatio)
+4. Blend five per-pixel transforms (hue-shift, palette-remap, gradient-aware, colour-grade, luminance-preserve) weighted by the profile
+5. Special cases applied before the weighted blend:
+   - Near-white pixels (l > 0.90): faint warm nudge only
+   - Single-hue flat logos (coloredRatio > 0.05, multiColor < 0.15, s > 0.20, l > 0.10): mapped directly to bright orange `rgb(255, 106, 0)`
+   - Achromatic B&W logos (coloredRatio < 0.05, l < 0.15 or s < 0.15): mapped to orange tonal range
+6. Return both the original and orangified image as data URLs
 
 The UI is a two-panel layout: upload/controls on the left, before/after slider comparison on the right.
+
+### Deployment: Vercel
+
+`vercel.json` at the repo root configures Vercel to build only the `orange-logo` frontend:
+- Build command: `pnpm --filter @workspace/orange-logo run build`
+- Output directory: `artifacts/orange-logo/dist/public`
+- SPA rewrites: all routes → `/index.html`
+
+`vite.config.ts` no longer requires `PORT` or `BASE_PATH` env vars (both have defaults). Replit-only plugins (`runtimeErrorOverlay`, `cartographer`, `devBanner`) are gated on `REPL_ID` being present.
 
 ### Database: `lib/db`
 
