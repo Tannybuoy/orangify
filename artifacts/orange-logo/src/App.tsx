@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Upload, Zap, Download, Image as ImageIcon, ChevronsLeftRight } from "lucide-react";
 import { orangifyImage, downloadDataUrl, type OrangifyResult } from "@/lib/orangify";
+import { Analytics } from "@vercel/analytics/react";
 
 const queryClient = new QueryClient();
 
@@ -343,6 +344,7 @@ function App() {
       <TooltipProvider>
         <MainLayout />
         <Toaster />
+        <Analytics />
       </TooltipProvider>
     </QueryClientProvider>
   );
