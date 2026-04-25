@@ -103,6 +103,12 @@ interface FeatureProfile {
    */
   multiColor: number;
   /**
+   * Fraction of opaque pixels with genuine strong colour (s>0.20, mid-range l).
+   * Distinguishes true B&W logos (≈0) from single-hue logos like green+black (>0).
+   * Guards the near-black → orange mapping so it only fires on achromatic images.
+   */
+  coloredRatio: number;
+  /**
    * Sparse sharp edges against an otherwise flat image → text / glyphs.
    * Drives luminance-preserving transform to keep contrast and readability.
    */
@@ -137,6 +143,7 @@ function analyzeImage(
   let opaqueCount = 0;
   let lowSatCount = 0;
   let coloredCount = 0;
+  let strongColorCount = 0;
 
   const stride = width * 4;
 
@@ -151,6 +158,7 @@ function analyzeImage(
       opaqueCount++;
       satSum += s;
       if (s < 0.08) lowSatCount++;
+      if (s > 0.20 && l > 0.10 && l < 0.90) strongColorCount++;
 
       // Only pixels with meaningful colour contribute to hue analysis
       if (s > 0.15 && l > 0.05 && l < 0.95) {
@@ -191,6 +199,7 @@ function analyzeImage(
       warmBias: 0,
       flatness: 1,
       gradientLikely: 0,
+      coloredRatio: 0,
     };
   }
 
@@ -233,7 +242,9 @@ function analyzeImage(
     1,
   );
 
-  return { photographic, multiColor, textDominance, warmBias, flatness, gradientLikely };
+  const coloredRatio = strongColorCount / opaqueCount;
+
+  return { photographic, multiColor, textDominance, warmBias, flatness, gradientLikely, coloredRatio };
 }
 
 // ─── Step 2 · Per-pixel transforms ───────────────────────────────────────────
@@ -342,6 +353,31 @@ function blendPixel(
   // warm nudge so white stays white and transparent-background logos look clean.
   if (l > 0.90) {
     return [Math.min(255, r + 2), Math.max(0, g - 1), Math.max(0, b - 4)];
+  }
+
+  // Single-hue flat logo (e.g. solid LinkedIn blue, Starbucks dark green):
+  // txHueShift preserves lightness, so a dark colour (l≈0.2) produces brown.
+  // When the image has genuine colour but only one hue and no gradient, map
+  // coloured pixels directly to bright orange. The s>0.20 + l>0.10 guards
+  // ensure black outlines in the same logo are NOT caught here.
+  if (
+    profile.coloredRatio > 0.05 &&
+    profile.multiColor < 0.15 &&
+    profile.photographic < 0.3 &&
+    s > 0.20 && l > 0.10
+  ) {
+    return hslToRgb(ORANGE_HUE, 1.0, 0.50);
+  }
+
+  // Near-black or achromatic pixels in B&W logos: hue-based transforms leave
+  // them black because l=0 produces black regardless of hue. JPEG compression
+  // also inflates HSL saturation on near-black pixels (e.g. rgb(5,3,2) → s≈0.43)
+  // so saturation alone is not a reliable test.
+  // Gate on coloredRatio<0.05: a true B&W/greyscale image has no strongly-coloured
+  // pixels, whereas a green+black logo has many — so this won't fire for it.
+  if ((l < 0.15 || s < 0.15) && profile.coloredRatio < 0.05) {
+    const t = clamp(l / 0.88, 0, 1);
+    return hslToRgb(ORANGE_HUE, lerp(1.0, 0.25, t), lerp(0.50, 0.85, t));
   }
 
   // ── Base weights from image-level feature profile ──
